@@ -1,6 +1,6 @@
 # serkom_kpu
 
-A new Flutter project.
+Local Database Using SQFLite
 
 ## Getting Started
 
