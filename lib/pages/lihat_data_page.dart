@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:serkom_kpu/model/pemilih_model.dart';
+import 'package:serkom_kpu/services/db_pemilih.dart';
 
 class LihatDataPage extends StatefulWidget {
   const LihatDataPage({super.key});
@@ -9,35 +13,79 @@ class LihatDataPage extends StatefulWidget {
 }
 
 class _LihatDataPageState extends State<LihatDataPage> {
+  List<PemilihModel>? listPemilih;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Data Pemilih"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              DBPemilih.getAllPemilih().then((value) => log("$value"));
+            },
+            icon: const Icon(
+              Icons.data_array,
+              size: 25.0,
+            ),
+          ),
+        ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {},
-        child: ListView.separated(
-          physics: const BouncingScrollPhysics(),
-          separatorBuilder: (context, index) {
-            return const SizedBox(height: 5);
-          },
-          padding: const EdgeInsets.all(12.0),
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            final listUsers = users[index];
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CardPemilih(
-                  user: listUsers,
-                )
-              ],
-            );
-          },
-        ),
+      body: FutureBuilder(
+        future: DBPemilih.getAllPemilih(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return const Text("Error");
+          if (snapshot.data == null) return const CircularProgressIndicator();
+          if (snapshot.data!.isEmpty) {
+            return const Center(child: Text("No Data"));
+          }
+          final data = snapshot.data!;
+          return ListView.separated(
+            separatorBuilder: (context, index) {
+              return const SizedBox(
+                height: 4.0,
+              );
+            },
+            padding: const EdgeInsets.all(12.0),
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final listUsers = data[index];
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CardPemilih(
+                    user: listUsers,
+                  )
+                ],
+              );
+            },
+          );
+        },
       ),
+      // RefreshIndicator(
+      //   onRefresh: () async {},
+      //   child: ListView.separated(
+      //     physics: BouncingScrollPhysics(),
+      //     separatorBuilder: (context, index) {
+      //       return SizedBox(height: 5);
+      //     },
+      //     padding: EdgeInsets.all(12.0),
+      //     itemCount: users.length,
+      //     itemBuilder: (context, index) {
+      //       final listUsers = users[index];
+      //       return Column(
+      //         mainAxisSize: MainAxisSize.min,
+      //         children: [
+      //           CardPemilih(
+      //             user: listUsers,
+      //           )
+      //         ],
+      //       );
+      //     },
+      //   ),
+      // ),
     );
   }
 }
@@ -62,28 +110,39 @@ class CardPemilih extends StatelessWidget {
           child: Column(
             children: [
               AtributPemilih(
-                  namaAtribut: "NIK", value: Text(user["id"].toString())),
-              AtributPemilih(namaAtribut: "Nama", value: Text(user["name"])),
+                  namaAtribut: "NIK", value: Text(user["nik"].toString())),
+              const SizedBox(height: 3.0),
               AtributPemilih(
-                  namaAtribut: "No.HP", value: Text(user["no_handphone"])),
+                  namaAtribut: "Nama", value: Text(user["namaLengkap"])),
+              const SizedBox(height: 3.0),
               AtributPemilih(
-                namaAtribut: "Jenis Kelamin",
-                value: Text(user["jenis_kelamin"]),
-              ),
+                  namaAtribut: "No.HP", value: Text(user["nomorHandphone"])),
+              const SizedBox(height: 3.0),
               AtributPemilih(
-                namaAtribut: "Tanggal",
-                value: Text(user["tanggal_pendataan"].toString()),
-              ),
-              const AtributPemilih(
+                  namaAtribut: "Jenis Kelamin",
+                  value: Text(user["jenisKelamin"])),
+              const SizedBox(height: 3.0),
+              AtributPemilih(
+                  namaAtribut: "Tanggal",
+                  // value: Text(user["tanggalPendataan"].toString()),
+                  value: Text(
+                    DateFormat("dd MMMM yyyy").format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          user['tanggalPendataan']),
+                    ),
+                  )),
+              const SizedBox(height: 3.0),
+              AtributPemilih(
                 namaAtribut: "Alamat",
                 value: Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                  user["alamatRumah"],
                 ),
               ),
+              const SizedBox(height: 3.0),
               AtributPemilih(
                 namaAtribut: "Gambar",
                 value: Image.network(
-                  "https://images.unsplash.com/flagged/photo-1559502867-c406bd78ff24?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=685&q=80",
+                  "https://i.ibb.co/S32HNjD/no-image.jpg",
                   height: 170.0,
                   fit: BoxFit.fill,
                 ),

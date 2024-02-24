@@ -18,17 +18,16 @@ class FormEntryPage extends StatefulWidget {
 }
 
 class _FormEntryPageState extends State<FormEntryPage> {
-  int? nik;
-  String? namaLengkap;
-  String? nomorHandphone;
+  TextEditingController nik = TextEditingController();
+  TextEditingController namaLengkap = TextEditingController();
+  TextEditingController nomorHandphone = TextEditingController();
+  TextEditingController alamatRumah = TextEditingController();
+  TextEditingController gambar = TextEditingController();
   String? jenisKelamin;
   int? tanggalPendataan;
-  String? alamatRumah;
-  String? gambar;
   File? _selectedImage;
 
   bool loading = false;
-  String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -36,18 +35,6 @@ class _FormEntryPageState extends State<FormEntryPage> {
       appBar: AppBar(
         title: const Text("Form Entry"),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // DBPemilih.deletePemilih();
-              DBPemilih.getAllPemilih().then((value) => log(value.toString()));
-            },
-            icon: const Icon(
-              Icons.delete_forever,
-              size: 25.0,
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -84,8 +71,9 @@ class _FormEntryPageState extends State<FormEntryPage> {
                         ),
                         child: Center(
                           child: TextField(
+                            controller: nik,
                             onChanged: (value) {
-                              nik = int.parse(value);
+                              nik.text = value;
                             },
                             style: const TextStyle(),
                             decoration: const InputDecoration(
@@ -126,8 +114,9 @@ class _FormEntryPageState extends State<FormEntryPage> {
                           ),
                         ),
                         child: TextField(
+                          controller: namaLengkap,
                           onChanged: (value) {
-                            namaLengkap = value;
+                            namaLengkap.text = value;
                           },
                           style: const TextStyle(),
                           decoration: const InputDecoration(
@@ -167,8 +156,9 @@ class _FormEntryPageState extends State<FormEntryPage> {
                           ),
                         ),
                         child: TextField(
+                          controller: nomorHandphone,
                           onChanged: (value) {
-                            nomorHandphone = value;
+                            nomorHandphone.text = value;
                           },
                           style: const TextStyle(),
                           decoration: const InputDecoration(
@@ -294,9 +284,10 @@ class _FormEntryPageState extends State<FormEntryPage> {
                           ),
                         ),
                         child: TextField(
+                          controller: alamatRumah,
                           maxLines: 5,
                           onChanged: (value) {
-                            alamatRumah = value;
+                            alamatRumah.text = value;
                           },
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -340,38 +331,56 @@ class _FormEntryPageState extends State<FormEntryPage> {
                       ),
                     ),
                     Expanded(
-                      child: InkWell(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(
-                              16.0,
-                            ),
-                          ),
-                          onTap: () {
-                            _pickImageGallery();
-                          },
-                          child: _selectedImage == null
-                              ? Ink(
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        loading ? Colors.blueGrey[400] : null,
-                                    image: loading
-                                        ? null
-                                        : DecorationImage(
-                                            image: NetworkImage(
-                                              imageUrl ??
-                                                  "https://i.ibb.co/S32HNjD/no-image.jpg",
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(
-                                        16.0,
-                                      ),
+                      child: _selectedImage == null
+                          ? InkWell(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(
+                                  6.0,
+                                ),
+                              ),
+                              onTap: () {
+                                _pickImageGallery();
+                              },
+                              child: Ink(
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey[400],
+                                  image: const DecorationImage(
+                                    image: AssetImage(
+                                        "assets/images/no-image.jpg"),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(
+                                      6.0,
                                     ),
                                   ),
-                                )
-                              : Image.file(_selectedImage!)),
+                                ),
+                              ))
+                          : InkWell(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(
+                                  6.0,
+                                ),
+                              ),
+                              onTap: () {
+                                _pickImageGallery();
+                              },
+                              child: Ink(
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey[400],
+                                  image: DecorationImage(
+                                    image: FileImage(_selectedImage!),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(
+                                      6.0,
+                                    ),
+                                  ),
+                                ),
+                              )),
                     ),
                   ],
                 ),
@@ -383,25 +392,41 @@ class _FormEntryPageState extends State<FormEntryPage> {
                   height: 40,
                   child: ElevatedButton(
                     onPressed: () async {
-                      await DBPemilih.getAllPemilih();
-                      var dataPemilih = PemilihModel(nik: nik);
-                      await DBPemilih.isNikRegistered(dataPemilih.nik!).then(
-                        (value) async {
-                          value
-                              ? AlertBannerWidgets.fail(
-                                  context, 'NIK sudah terdaftar')
-                              : await DBPemilih.createPemilih(
-                                  nik: nik!,
-                                  namaLengkap: namaLengkap!,
-                                  nomorHandphone: nomorHandphone!,
-                                  jenisKelamin: jenisKelamin!,
-                                  tanggalPendataan: tanggalPendataan!,
-                                  alamatRumah: alamatRumah!,
-                                  gambar: gambar ??
-                                      "https://i.ibb.co/S32HNjD/no-image.jpg",
-                                ).then((value) => log(value.toString()));
-                        },
-                      );
+                      try {
+                        var dataPemilih =
+                            PemilihModel(nik: int.parse(nik.text));
+                        await DBPemilih.isNikRegistered(dataPemilih.nik!).then(
+                          (value) async {
+                            value
+                                ? AlertBannerWidgets.fail(
+                                    context, 'NIK sudah terdaftar')
+                                : await DBPemilih.createPemilih(
+                                    nik: int.parse(nik.text),
+                                    namaLengkap: namaLengkap.text,
+                                    nomorHandphone: nomorHandphone.text,
+                                    jenisKelamin: jenisKelamin!,
+                                    tanggalPendataan: tanggalPendataan!,
+                                    alamatRumah: alamatRumah.text,
+                                    gambar: gambar.text,
+                                  ).then((value) => log(value.toString())).then(
+                                    (value) => AlertBannerWidgets.success(
+                                        context, "Sukses Input"));
+                          },
+                        );
+                        Future.delayed(const Duration(milliseconds: 800))
+                            .then((value) {
+                          setState(() {
+                            namaLengkap.clear();
+                            nomorHandphone.clear();
+                            alamatRumah.clear();
+                            jenisKelamin = "";
+                            alamatRumah.clear();
+                          });
+                        });
+                      } catch (e) {
+                        // ignore: use_build_context_synchronously
+                        AlertBannerWidgets.fail(context, "Gagal Input");
+                      }
                     },
                     child: const Text("Submit"),
                   ),
@@ -414,23 +439,25 @@ class _FormEntryPageState extends State<FormEntryPage> {
     );
   }
 
-  Future<void> _pickImageGallery() async {
+  Future<XFile?> _pickImageGallery() async {
     final returnImage =
         await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    if (returnImage == null) return;
     setState(() {
-      _selectedImage = File(returnImage.path);
+      _selectedImage = File(returnImage!.path);
+      log(returnImage.name);
     });
+    return returnImage;
   }
 
-  Future<void> _pickImageCamera() async {
+  Future<XFile?> _pickImageCamera() async {
     final returnImage =
         await ImagePicker().pickImage(source: ImageSource.camera);
 
-    if (returnImage == null) return;
     setState(() {
-      _selectedImage = File(returnImage.path);
+      _selectedImage = File(returnImage!.path);
+      log(returnImage.name);
     });
+    return returnImage;
   }
 }
