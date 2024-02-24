@@ -90,6 +90,7 @@ class _MenuPageState extends State<MenuPage> {
                 },
                 title: "Keluar",
               ),
+              const SizedBox(width: 20),
             ],
           ),
         ));

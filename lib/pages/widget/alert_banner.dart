@@ -15,17 +15,18 @@ class InAppNotification extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(top: 25),
       width: double.infinity,
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: const BorderRadius.all(
-          Radius.circular(5),
+          Radius.circular(6),
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         child: Material(
           color: const Color.fromARGB(0, 162, 95, 95),
           child: Text(

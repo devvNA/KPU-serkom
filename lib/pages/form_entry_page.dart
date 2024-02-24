@@ -3,12 +3,15 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:serkom_kpu/model/pemilih_model.dart';
 import 'package:serkom_kpu/pages/utils/app_colors.dart';
 import 'package:serkom_kpu/pages/widget/alert_banner.dart';
 import '../services/db_pemilih.dart';
+import 'utils/validator.dart';
 import 'widget/date_picker.dart';
+import 'widget/file_image_picker.dart';
 
 class FormEntryPage extends StatefulWidget {
   const FormEntryPage({Key? key}) : super(key: key);
@@ -22,12 +25,36 @@ class _FormEntryPageState extends State<FormEntryPage> {
   TextEditingController namaLengkap = TextEditingController();
   TextEditingController nomorHandphone = TextEditingController();
   TextEditingController alamatRumah = TextEditingController();
-  TextEditingController gambar = TextEditingController();
+  String? gambar;
   String? jenisKelamin;
   int? tanggalPendataan;
+  String? lokasi;
   File? _selectedImage;
 
-  bool loading = false;
+  bool isLoading = false;
+
+  Future<String> getLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+    lokasi = position.toString();
+    return lokasi!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,10 +336,53 @@ class _FormEntryPageState extends State<FormEntryPage> {
                         child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(155, 40),
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Colors.indigo,
                       ),
-                      onPressed: () {},
-                      child: const Text("Cek Lokasi"),
+                      onPressed: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        await getLocation().then((value) => {
+                              showDialog<void>(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Info'),
+                                    content: SingleChildScrollView(
+                                      child: ListBody(
+                                        children: <Widget>[
+                                          Text('$lokasi'),
+                                        ],
+                                      ),
+                                    ),
+                                    actions: <Widget>[
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          setState(() {
+                                            alamatRumah.text = lokasi!;
+                                          });
+                                        },
+                                        child: const Text("Ok"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              )
+                            });
+                        isLoading = false;
+                      },
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text("Cek Lokasi"),
                     )),
                   ],
                 ),
@@ -331,56 +401,14 @@ class _FormEntryPageState extends State<FormEntryPage> {
                       ),
                     ),
                     Expanded(
-                      child: _selectedImage == null
-                          ? InkWell(
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(
-                                  6.0,
-                                ),
-                              ),
-                              onTap: () {
-                                _pickImageGallery();
-                              },
-                              child: Ink(
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  color: Colors.blueGrey[400],
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                        "assets/images/no-image.jpg"),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(
-                                      6.0,
-                                    ),
-                                  ),
-                                ),
-                              ))
-                          : InkWell(
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(
-                                  6.0,
-                                ),
-                              ),
-                              onTap: () {
-                                _pickImageGallery();
-                              },
-                              child: Ink(
-                                height: 150,
-                                decoration: BoxDecoration(
-                                  color: Colors.blueGrey[400],
-                                  image: DecorationImage(
-                                    image: FileImage(_selectedImage!),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(
-                                      6.0,
-                                    ),
-                                  ),
-                                ),
-                              )),
+                      child: QImagePicker(
+                        label: "",
+                        validator: Validator.required,
+                        onChanged: (value) {
+                          gambar = value;
+                          log(gambar!);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -407,7 +435,7 @@ class _FormEntryPageState extends State<FormEntryPage> {
                                     jenisKelamin: jenisKelamin!,
                                     tanggalPendataan: tanggalPendataan!,
                                     alamatRumah: alamatRumah.text,
-                                    gambar: gambar.text,
+                                    gambar: gambar!,
                                   ).then((value) => log(value.toString())).then(
                                     (value) => AlertBannerWidgets.success(
                                         context, "Sukses Input"));
@@ -439,25 +467,25 @@ class _FormEntryPageState extends State<FormEntryPage> {
     );
   }
 
-  Future<XFile?> _pickImageGallery() async {
-    final returnImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+  // Future _pickImageGallery() async {
+  //   final returnImage =
+  //       await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      _selectedImage = File(returnImage!.path);
-      log(returnImage.name);
-    });
-    return returnImage;
-  }
+  //   setState(() {
+  //     _selectedImage = File(returnImage!.path);
+  //     log(returnImage.name);
+  //   });
+  //   return returnImage;
+  // }
 
-  Future<XFile?> _pickImageCamera() async {
-    final returnImage =
-        await ImagePicker().pickImage(source: ImageSource.camera);
+  // Future _pickImageCamera() async {
+  //   final returnImage =
+  //       await ImagePicker().pickImage(source: ImageSource.camera);
 
-    setState(() {
-      _selectedImage = File(returnImage!.path);
-      log(returnImage.name);
-    });
-    return returnImage;
-  }
+  //   setState(() {
+  //     _selectedImage = File(returnImage!.path);
+  //     log(returnImage.name);
+  //   });
+  //   return returnImage;
+  // }
 }

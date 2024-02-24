@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:serkom_kpu/model/pemilih_model.dart';
@@ -83,7 +82,9 @@ class _LihatDataPageState extends State<LihatDataPage> {
         future: DBPemilih.getAllPemilih(),
         builder: (context, snapshot) {
           if (snapshot.hasError) return const Text("Error");
-          if (snapshot.data == null) return const CircularProgressIndicator();
+          if (snapshot.data == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
           if (snapshot.data!.isEmpty) {
             return const Center(child: Text("No Data"));
           }
@@ -102,7 +103,7 @@ class _LihatDataPageState extends State<LihatDataPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CardPemilih(
-                    user: listUsers,
+                    pemilih: listUsers,
                   )
                 ],
               );
@@ -114,12 +115,15 @@ class _LihatDataPageState extends State<LihatDataPage> {
   }
 }
 
+// ignore: must_be_immutable
 class CardPemilih extends StatelessWidget {
-  final Map user;
+  String gambar;
+  final Map pemilih;
 
-  const CardPemilih({
+  CardPemilih({
     Key? key,
-    required this.user,
+    this.gambar = "",
+    required this.pemilih,
   }) : super(key: key);
 
   @override
@@ -134,43 +138,47 @@ class CardPemilih extends StatelessWidget {
           child: Column(
             children: [
               AtributPemilih(
-                  namaAtribut: "NIK", value: Text(user["nik"].toString())),
+                  namaAtribut: "NIK", value: Text(pemilih["nik"].toString())),
               const SizedBox(height: 3.0),
               AtributPemilih(
-                  namaAtribut: "Nama", value: Text(user["namaLengkap"])),
+                  namaAtribut: "Nama", value: Text(pemilih["namaLengkap"])),
               const SizedBox(height: 3.0),
               AtributPemilih(
-                  namaAtribut: "No.HP", value: Text(user["nomorHandphone"])),
+                  namaAtribut: "No.HP", value: Text(pemilih["nomorHandphone"])),
               const SizedBox(height: 3.0),
               AtributPemilih(
                   namaAtribut: "Jenis Kelamin",
-                  value: Text(user["jenisKelamin"])),
+                  value: Text(pemilih["jenisKelamin"])),
               const SizedBox(height: 3.0),
               AtributPemilih(
                   namaAtribut: "Tanggal",
-                  // value: Text(user["tanggalPendataan"].toString()),
                   value: Text(
                     DateFormat("dd MMMM yyyy").format(
                       DateTime.fromMillisecondsSinceEpoch(
-                          user['tanggalPendataan']),
+                          pemilih['tanggalPendataan']),
                     ),
                   )),
               const SizedBox(height: 3.0),
               AtributPemilih(
                 namaAtribut: "Alamat",
                 value: Text(
-                  user["alamatRumah"],
+                  pemilih["alamatRumah"],
                 ),
               ),
               const SizedBox(height: 3.0),
-              AtributPemilih(
-                namaAtribut: "Gambar",
-                value: Image.network(
-                  "https://i.ibb.co/S32HNjD/no-image.jpg",
-                  height: 170.0,
-                  fit: BoxFit.fill,
-                ),
-              ),
+              pemilih['gambar'] == null
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : AtributPemilih(
+                      namaAtribut: "Gambar",
+                      value: Image.network(
+                        pemilih["gambar"],
+                        filterQuality: FilterQuality.medium,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerLeft,
+                      ))
             ],
           ),
         ),
