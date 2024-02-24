@@ -31,6 +31,52 @@ class _LihatDataPageState extends State<LihatDataPage> {
               size: 25.0,
             ),
           ),
+          IconButton(
+            onPressed: () async {
+              await showDialog<void>(
+                context: context,
+                barrierDismissible: true,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Konfirmasi'),
+                    content: const SingleChildScrollView(
+                      child: ListBody(
+                        children: <Widget>[
+                          Text(
+                              'Apakah anda yakin akan menghapus data pemilih?'),
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text("No"),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey,
+                        ),
+                        onPressed: () {
+                          DBPemilih.deletePemilih().then((value) =>
+                              DBPemilih.getAllPemilih()
+                                  .then((value) => log("$value")));
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Yes"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            icon: const Icon(
+              Icons.delete_forever,
+              size: 25.0,
+            ),
+          ),
         ],
       ),
       body: FutureBuilder(
@@ -64,28 +110,6 @@ class _LihatDataPageState extends State<LihatDataPage> {
           );
         },
       ),
-      // RefreshIndicator(
-      //   onRefresh: () async {},
-      //   child: ListView.separated(
-      //     physics: BouncingScrollPhysics(),
-      //     separatorBuilder: (context, index) {
-      //       return SizedBox(height: 5);
-      //     },
-      //     padding: EdgeInsets.all(12.0),
-      //     itemCount: users.length,
-      //     itemBuilder: (context, index) {
-      //       final listUsers = users[index];
-      //       return Column(
-      //         mainAxisSize: MainAxisSize.min,
-      //         children: [
-      //           CardPemilih(
-      //             user: listUsers,
-      //           )
-      //         ],
-      //       );
-      //     },
-      //   ),
-      // ),
     );
   }
 }
@@ -196,62 +220,3 @@ class AtributPemilih extends StatelessWidget {
     );
   }
 }
-
-final tanggalPendataan = (DateFormat("dd/MM/yyyy").format(DateTime.now()));
-
-List<Map<String, dynamic>> users = [
-  {
-    "id": 1,
-    "email": "george.bluth@reqres.in",
-    "name": "George Bluth",
-    "avatar": "https://reqres.in/img/faces/1-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Laki-laki",
-    "tanggal_pendataan": tanggalPendataan
-  },
-  {
-    "id": 2,
-    "email": "janet.weaver@reqres.in",
-    "name": "Janet Weaver",
-    "photo": "https://reqres.in/img/faces/2-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Laki-laki",
-    "tanggal_pendataan": tanggalPendataan
-  },
-  {
-    "id": 3,
-    "email": "emma.wong@reqres.in",
-    "name": "Emma Wong",
-    "photo": "https://reqres.in/img/faces/3-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Laki-laki",
-    "tanggal_pendataan": tanggalPendataan
-  },
-  {
-    "id": 4,
-    "email": "eve.holt@reqres.in",
-    "name": "Eve Holt",
-    "photo": "https://reqres.in/img/faces/4-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Perempuan",
-    "tanggal_pendataan": tanggalPendataan
-  },
-  {
-    "id": 5,
-    "email": "charles.morris@reqres.in",
-    "name": "Charles Morris",
-    "photo": "https://reqres.in/img/faces/5-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Perempuan",
-    "tanggal_pendataan": tanggalPendataan
-  },
-  {
-    "id": 6,
-    "email": "tracey.ramos@reqres.in",
-    "name": "Tracey Ramos",
-    "photo": "https://reqres.in/img/faces/6-image.jpg",
-    "no_handphone": "082142185804",
-    "jenis_kelamin": "Laki-laki",
-    "tanggal_pendataan": tanggalPendataan
-  }
-];
