@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'pages/splash_screen.dart';
 import 'pages/utils/app_colors.dart';
 
