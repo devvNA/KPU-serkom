@@ -1,5 +1,5 @@
-import 'package:sqflite/sqflite.dart' as sql;
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' as sql;
 
 class DBMaster {
   //Inisialisasi Database SQL
@@ -29,5 +29,4 @@ class DBMaster {
       """,
     );
   }
-
 }

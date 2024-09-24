@@ -1,20 +1,22 @@
-// ignore_for_file: camel_case_types, prefer_typing_uninitialized_variables, unused_field, unused_import
+// ignore_for_file: camel_case_types, prefer_typing_uninitialized_variables, unused_field, unused_import, use_build_context_synchronously, duplicate_ignore
 
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:serkom_kpu/model/pemilih_model.dart';
 import 'package:serkom_kpu/pages/utils/app_colors.dart';
 import 'package:serkom_kpu/pages/widget/alert_banner.dart';
+
 import '../services/db_pemilih.dart';
 import 'utils/validator.dart';
 import 'widget/date_picker.dart';
 import 'widget/file_image_picker.dart';
 
 class FormEntryPage extends StatefulWidget {
-  const FormEntryPage({Key? key}) : super(key: key);
+  const FormEntryPage({super.key});
 
   @override
   State<FormEntryPage> createState() => _FormEntryPageState();
@@ -421,23 +423,23 @@ class _FormEntryPageState extends State<FormEntryPage> {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        var dataPemilih =
-                            PemilihModel(nik: int.parse(nik.text));
+                        final dataPemilih = PemilihModel(
+                          nik: int.parse(nik.text),
+                          namaLengkap: namaLengkap.text,
+                          nomorHandphone: nomorHandphone.text,
+                          jenisKelamin: jenisKelamin!,
+                          tanggalPendataan: tanggalPendataan!,
+                          alamatRumah: alamatRumah.text,
+                          gambar: gambar!,
+                        );
                         await DBPemilih.isNikRegistered(dataPemilih.nik!).then(
                           (value) async {
                             value
                                 ? AlertBannerWidgets.fail(
                                     context, 'NIK sudah terdaftar')
-                                : await DBPemilih.createPemilih(
-                                    nik: int.parse(nik.text),
-                                    namaLengkap: namaLengkap.text,
-                                    nomorHandphone: nomorHandphone.text,
-                                    jenisKelamin: jenisKelamin!,
-                                    tanggalPendataan: tanggalPendataan!,
-                                    alamatRumah: alamatRumah.text,
-                                    gambar: gambar!,
-                                  ).then((value) => log(value.toString())).then(
-                                    (value) => AlertBannerWidgets.success(
+                                : await DBPemilih.createPemilih(dataPemilih)
+                                    .then((value) => log(value.toString()))
+                                    .then((value) => AlertBannerWidgets.success(
                                         context, "Sukses Input"));
                           },
                         );

@@ -1,76 +1,56 @@
 import 'dart:developer';
+
 import 'package:serkom_kpu/model/pemilih_model.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
 import 'db_master.dart';
 
 class DBPemilih {
-  //Create data pemilih
-  static Future<PemilihModel> createPemilih(
-      {required int nik,
-      required String namaLengkap,
-      required String nomorHandphone,
-      required String jenisKelamin,
-      required String alamatRumah,
-      required String gambar,
-      required int tanggalPendataan}) async {
-    final db = await DBMaster.db();
+  static const String _tableName = 'dataPemilih';
 
-    final data = {
-      "nik": nik,
-      "namaLengkap": namaLengkap,
-      "nomorHandphone": nomorHandphone,
-      "jenisKelamin": jenisKelamin,
-      "tanggalPendataan": tanggalPendataan,
-      "alamatRumah": alamatRumah,
-      "gambar": gambar,
-    };
+  static Future<PemilihModel> createPemilih(PemilihModel pemilih) async {
+    final db = await DBMaster.db();
     final id = await db.insert(
-      'dataPemilih',
-      data,
+      _tableName,
+      pemilih.toMap(),
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
-    return PemilihModel(
-      id: id,
-      nik: nik,
-      namaLengkap: namaLengkap,
-      nomorHandphone: nomorHandphone,
-      jenisKelamin: jenisKelamin,
-      tanggalPendataan: tanggalPendataan,
-      alamatRumah: alamatRumah,
-      gambar: gambar,
-    );
+    return pemilih.copyWith(id: id);
   }
 
-  // Read all data pemilih
-  static Future<List<Map<String, dynamic>>> getAllPemilih() async {
+  static Future<List<PemilihModel>> getAllPemilih() async {
     final db = await DBMaster.db();
-    return db.query(
-      'dataPemilih',
-      orderBy: "id",
-    );
+    final maps = await db.query(_tableName, orderBy: "id");
+    return maps.map((map) => PemilihModel.fromMap(map)).toList();
   }
 
-  // validasi duplikat data pemilih
   static Future<bool> isNikRegistered(int nik) async {
     final db = await DBMaster.db();
     final result = await db.query(
-      'dataPemilih',
+      _tableName,
       where: 'nik = ?',
       whereArgs: [nik],
+      limit: 1,
     );
     return result.isNotEmpty;
   }
 
-  // Delete Database
   static Future<void> deletePemilih() async {
     final db = await DBMaster.db();
     try {
-      await db.delete(
-        "dataPemilih",
-      );
+      await db.delete(_tableName);
     } catch (err) {
-      log("Something went wrong when deleting an item: $err");
+      log("Terjadi kesalahan saat menghapus semua data: $err");
+    }
+  }
+
+  static Future<void> deleteData({required int id}) async {
+    final db = await DBMaster.db();
+    try {
+      await db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
+      log("Data berhasil dihapus");
+    } catch (err) {
+      log("Terjadi kesalahan saat menghapus item: $err");
     }
   }
 }

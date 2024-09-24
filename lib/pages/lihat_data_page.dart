@@ -1,7 +1,9 @@
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:serkom_kpu/model/pemilih_model.dart';
+import 'package:serkom_kpu/pages/utils/app_colors.dart';
 import 'package:serkom_kpu/services/db_pemilih.dart';
 
 class LihatDataPage extends StatefulWidget {
@@ -13,6 +15,10 @@ class LihatDataPage extends StatefulWidget {
 
 class _LihatDataPageState extends State<LihatDataPage> {
   List<PemilihModel>? listPemilih;
+
+  Future<void> refreshData() async {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +48,7 @@ class _LihatDataPageState extends State<LihatDataPage> {
                       child: ListBody(
                         children: <Widget>[
                           Text(
-                              'Apakah anda yakin akan menghapus data pemilih?'),
+                              'Apakah anda yakin akan menghapus seluruh data pemilih?'),
                         ],
                       ),
                     ),
@@ -52,19 +58,23 @@ class _LihatDataPageState extends State<LihatDataPage> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text("No"),
+                        child: const Text("Tidak"),
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColor.primaryColor,
+                          side: const BorderSide(
+                            color: AppColor.primaryColor,
+                          ),
                         ),
                         onPressed: () {
                           DBPemilih.deletePemilih().then((value) =>
                               DBPemilih.getAllPemilih()
                                   .then((value) => log("$value")));
                           Navigator.pop(context);
+                          refreshData();
                         },
-                        child: const Text("Yes"),
+                        child: const Text("Ya"),
                       ),
                     ],
                   );
@@ -89,23 +99,18 @@ class _LihatDataPageState extends State<LihatDataPage> {
             return const Center(child: Text("No Data"));
           }
           final data = snapshot.data!;
-          return ListView.separated(
-            separatorBuilder: (context, index) {
-              return const SizedBox(
-                height: 4.0,
-              );
-            },
-            padding: const EdgeInsets.all(12.0),
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
             itemCount: data.length,
             itemBuilder: (context, index) {
-              final listUsers = data[index];
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CardPemilih(
-                    pemilih: listUsers,
-                  )
-                ],
+              final pemilih = data[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: CardPemilih(
+                  pemilih: pemilih,
+                  index: index,
+                  onDelete: refreshData,
+                ),
               );
             },
           );
@@ -115,72 +120,72 @@ class _LihatDataPageState extends State<LihatDataPage> {
   }
 }
 
-// ignore: must_be_immutable
 class CardPemilih extends StatelessWidget {
-  String gambar;
-  final Map pemilih;
+  final int index;
+  final PemilihModel pemilih;
+  final VoidCallback onDelete;
 
-  CardPemilih({
-    Key? key,
-    this.gambar = "",
+  const CardPemilih({
+    super.key,
+    required this.index,
     required this.pemilih,
-  }) : super(key: key);
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: Card(
-        elevation: 2,
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          margin: const EdgeInsets.all(12),
-          color: Colors.white,
-          child: Column(
-            children: [
-              AtributPemilih(
-                  namaAtribut: "NIK", value: Text(pemilih["nik"].toString())),
-              const SizedBox(height: 3.0),
-              AtributPemilih(
-                  namaAtribut: "Nama", value: Text(pemilih["namaLengkap"])),
-              const SizedBox(height: 3.0),
-              AtributPemilih(
-                  namaAtribut: "No.HP", value: Text(pemilih["nomorHandphone"])),
-              const SizedBox(height: 3.0),
-              AtributPemilih(
-                  namaAtribut: "Jenis Kelamin",
-                  value: Text(pemilih["jenisKelamin"])),
-              const SizedBox(height: 3.0),
-              AtributPemilih(
-                  namaAtribut: "Tanggal",
-                  value: Text(
-                    DateFormat("dd MMMM yyyy").format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          pemilih['tanggalPendataan']),
-                    ),
-                  )),
-              const SizedBox(height: 3.0),
-              AtributPemilih(
-                namaAtribut: "Alamat",
-                value: Text(
-                  pemilih["alamatRumah"],
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  pemilih.namaLengkap!,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () async {
+                    await DBPemilih.deleteData(id: pemilih.id!);
+                    onDelete();
+                  },
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            AtributPemilih(namaAtribut: "NIK", value: pemilih.nik.toString()),
+            AtributPemilih(
+                namaAtribut: "No.HP", value: pemilih.nomorHandphone!),
+            AtributPemilih(
+                namaAtribut: "Jenis Kelamin", value: pemilih.jenisKelamin!),
+            AtributPemilih(
+              namaAtribut: "Tanggal",
+              value: DateFormat("dd MMMM yyyy").format(
+                DateTime.fromMillisecondsSinceEpoch(pemilih.tanggalPendataan!),
+              ),
+            ),
+            AtributPemilih(namaAtribut: "Alamat", value: pemilih.alamatRumah!),
+            const SizedBox(height: 16),
+            if (pemilih.gambar != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  pemilih.gambar!,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 3.0),
-              pemilih['gambar'] == null
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : AtributPemilih(
-                      namaAtribut: "Gambar",
-                      value: Image.network(
-                        pemilih["gambar"],
-                        filterQuality: FilterQuality.medium,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.centerLeft,
-                      ))
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -189,7 +194,7 @@ class CardPemilih extends StatelessWidget {
 
 class AtributPemilih extends StatelessWidget {
   final String namaAtribut;
-  final Widget value;
+  final String value;
 
   const AtributPemilih({
     super.key,
@@ -199,32 +204,30 @@ class AtributPemilih extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            namaAtribut,
-            style: const TextStyle(
-              fontSize: 14.0,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              namaAtribut,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ),
-        ),
-        const Expanded(
-          flex: 0,
-          child: Text(
-            ":   ",
-            style: TextStyle(
-              fontSize: 14.0,
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: value,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

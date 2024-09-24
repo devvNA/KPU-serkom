@@ -19,50 +19,72 @@ class InformasiPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Informasi"),
+        title: Text("Informasi",
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.blue.shade700,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  "Pemantauan Real Count Pemilu 2024",
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 RichText(
                   text: TextSpan(
                     text:
-                        'Setelah hasil quick count Pemilu 2024 diumumkan kemarin, warga RI kini menunggu data real count yang dikumpulkan oleh KPU. Penduduk Indonesia bisa memantau langsung pergerakan real time data real count di website resmi KPU. Data real time KPU bisa dipantau di website resmi KPU di alamat',
+                        'Setelah hasil quick count Pemilu 2024 diumumkan, warga RI kini menunggu data real count yang dikumpulkan oleh KPU. Anda dapat memantau langsung pergerakan real time data real count di ',
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
-                        color: Colors.black,
+                        color: Colors.black87,
                         fontSize: 16.0,
+                        height: 1.5,
                       ),
                     ),
                     children: <TextSpan>[
                       TextSpan(
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            onLaunchUrl();
-                          },
-                        text: ' https://pemilu2024.kpu.go.id/',
-                        style: const TextStyle(
+                        recognizer: TapGestureRecognizer()..onTap = onLaunchUrl,
+                        text: 'website resmi KPU',
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          color: Colors.blue.shade700,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
+                      const TextSpan(text: '.'),
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                Text(
-                  "Sebagai informasi, proses perhitungan suara Pemilu 2024 akan berlangsung selama dua hari. Hal tersebut sejalan dengan Peraturan KPU RI Nomor 3 Tahun 2022 tentang Tahapan dan Jadwal Penyelenggaraan Pemilihan Umum Tahun 2024 bahwa proses perhitungan suara akan berlangsung pada hari Rabu, 14 Februari 2024 hingga Kamis, 15 Februari 2024.",
-                  style: GoogleFonts.roboto(
-                    textStyle: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.0,
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Proses perhitungan suara Pemilu 2024 akan berlangsung selama dua hari, dari 14 hingga 15 Februari 2024, sesuai dengan Peraturan KPU RI Nomor 3 Tahun 2022.",
+                    style: GoogleFonts.roboto(
+                      textStyle: TextStyle(
+                        color: Colors.blue.shade900,
+                        fontSize: 15.0,
+                        height: 1.5,
+                      ),
                     ),
                   ),
                 ),

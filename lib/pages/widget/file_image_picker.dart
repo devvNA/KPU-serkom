@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names, unused_element
 import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -7,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:serkom_kpu/pages/utils/app_colors.dart';
 
-const String _CLOUDINARY_CLOUD_NAME = "dotz74j1p";
-const String _CLOUDINARY_API_KEY = "983354314759691";
-const String _CLOUDINARY_UPLOAD_PRESET = "yogjjkoh";
+const String _CLOUDINARY_CLOUD_NAME = "dwg0ma1qn";
+const String _CLOUDINARY_API_KEY = "173512623491694";
+const String _CLOUDINARY_UPLOAD_PRESET = "ihqf723e";
 
 class QImagePicker extends StatefulWidget {
   final String label;
@@ -22,7 +23,7 @@ class QImagePicker extends StatefulWidget {
   final bool enabled;
 
   const QImagePicker({
-    Key? key,
+    super.key,
     required this.label,
     this.value,
     this.validator,
@@ -31,7 +32,7 @@ class QImagePicker extends StatefulWidget {
     required this.onChanged,
     this.extensions = const ["jpg", "png"],
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   State<QImagePicker> createState() => _QImagePickerState();
@@ -92,7 +93,7 @@ class _QImagePickerState extends State<QImagePicker> {
     });
 
     var res = await Dio().post(
-      'https://api.cloudinary.com/v1_1/_CLOUDINARY_CLOUD_NAME/image/upload',
+      'https://api.cloudinary.com/v1_1/$_CLOUDINARY_CLOUD_NAME/upload',
       data: formData,
     );
 
@@ -207,11 +208,9 @@ class _QImagePickerState extends State<QImagePicker> {
             image: loading
                 ? null
                 : DecorationImage(
-                    image: NetworkImage(
-                      imageUrl == null
-                          ? "https://i.ibb.co/S32HNjD/no-image.jpg"
-                          : imageUrl!,
-                    ),
+                    image: imageUrl == null
+                        ? const AssetImage("assets/images/no-image.jpg")
+                        : NetworkImage(imageUrl!),
                     fit: BoxFit.cover,
                   ),
             borderRadius: const BorderRadius.all(
@@ -249,27 +248,6 @@ class _QImagePickerState extends State<QImagePicker> {
             ),
           ),
         ),
-        // Ink(
-        //   height: 200,
-        //   decoration: BoxDecoration(
-        //     color: Colors.blueGrey[200],
-        //     image: loading
-        //         ? null
-        //         : DecorationImage(
-        //             image: NetworkImage(
-        //               imageUrl == null
-        //                   ? "https://i.ibb.co/S32HNjD/no-image.jpg"
-        //                   : imageUrl!,
-        //             ),
-        //             fit: BoxFit.cover,
-        //           ),
-        //     borderRadius: const BorderRadius.all(
-        //       Radius.circular(
-        //         6.0,
-        //       ),
-        //     ),
-        //   ),
-        // ),
       ),
     );
   }
